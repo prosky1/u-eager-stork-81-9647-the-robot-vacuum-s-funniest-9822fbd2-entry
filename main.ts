@@ -1,42 +1,16 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { mkdirSync, writeFileSync } from "node:fs";
 
-const entryText =
-  "I did not miss the corner. The corner has been emotionally unavailable since Tuesday.";
+const LINE = "That spot is under the cat. She pays no rent, fears no suction, and has not moved since Tuesday. I work around her.";
 
-const outputPath = "/output/entry.txt";
-
-function fail(message: string): never {
-  console.error(`entry validation failed: ${message}`);
-  process.exit(1);
+function emit(text: string): void {
+  if (text.length === 0) {
+    throw new Error("entry text must not be empty");
+  }
+  if (text.length > 120) {
+    throw new Error(`entry text too long: ${text.length} chars (max 120)`);
+  }
+  mkdirSync("/output", { recursive: true });
+  writeFileSync("/output/entry.txt", text, "utf8");
 }
 
-if (entryText.length < 1 || entryText.length > 120) {
-  fail(`length ${entryText.length} is outside 1..120`);
-}
-
-if (entryText.trim().length === 0) {
-  fail("text is only whitespace");
-}
-
-if (entryText.includes("\n") || entryText.includes("\r")) {
-  fail("text must be a single line");
-}
-
-const charCount = [...entryText].length;
-if (charCount < 1 || charCount > 120) {
-  fail(`character count ${charCount} is outside 1..120`);
-}
-
-mkdirSync(dirname(outputPath), { recursive: true });
-writeFileSync(outputPath, entryText, "utf8");
-
-const written = readFileSync(outputPath, "utf8");
-if (written !== entryText) {
-  fail("written output does not match the entry text exactly");
-}
-
-const writtenChars = [...written].length;
-if (writtenChars !== charCount) {
-  fail(`written character count ${writtenChars} != expected ${charCount}`);
-}
+emit(LINE);
